@@ -5,6 +5,7 @@ use Aliraza371\MlPublicationCreation\Resources\CategorySelectResource;
 use App\Category;
 use App\Connectors\MercadolibreConnector;
 use App\Publication;
+use App\Services\CreateMlaProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Nova\Http\Requests\NovaRequest;
@@ -44,14 +45,20 @@ class MLAPublicationCreationController
 
         if ($validator->fails())
         {
-           foreach ($validator->errors()->all() as $error)
-           {
-               array_push($errors, $error);
-           }
+            foreach ($validator->errors()->all() as $error)
+            {
+                array_push($errors, $error);
+            }
         }
 
         $errors = $this->verifyTheRequiredFieldsPublication($publication, $errors);
 
+        if(count($errors ) == 0)
+        {
+            $data = $request->all();
+            $createMlaProductService = new CreateMlaProductService();
+            $createMlaProductService->createMlaProduct($publication, $data['attributes'],$data['category_id']);
+        }
 
         return [
             'errors' => $errors
